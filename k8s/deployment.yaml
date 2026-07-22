@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: register-summary
+  namespace: register-summary
+  labels:
+    app: register-summary
+spec:
+  # Pinned to 1: job state lives in the process's memory (see README), so more than one replica
+  # would mean requests for a given job could land on a pod that never processed it.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: register-summary
+  template:
+    metadata:
+      labels:
+        app: register-summary
+    spec:
+      containers:
+        - name: register-summary
+          image: localhost:32000/register-summary:latest
+          # Pulls from the microK8s local registry on every rollout so a `latest` rebuild is
+          # always picked up, rather than reusing a stale cached layer with the same tag.
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - configMapRef:
+                name: register-summary-config
+            - secretRef:
+                name: register-summary-secrets
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20

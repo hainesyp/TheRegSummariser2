@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: register-summary-config
+  namespace: register-summary
+data:
+  Ai__Provider: "OpenAI"
+  Ai__OpenAI__Model: "gpt-4o-mini"
+  Ai__Gemini__Model: "gemini-2.0-flash"
+  Ai__Claude__Model: "claude-sonnet-5"
+  # The analytical instructions sent to the AI provider. {ArticleUrl} and {ArticleText} are
+  # substituted at runtime. The JSON response-format contract is appended automatically by the
+  # app and is not configurable here - only the instructions above it are.
+  Ai__PromptTemplate: >-
+    You are an assistant summarising a technology news article for an IT and security
+    professional audience. The article was linked from a 'The Register' newsletter.
+    Article URL: {ArticleUrl}
+
+    Article content:
+    {ArticleText}
+
+    Summarise the article in exactly 5 concise bullet points capturing the key facts.
+    Categorise the article as exactly one of: Cybersecurity, AI, Cloud, or Other - choose the
+    single category that best matches the article's primary subject. If, and only if, the
+    category is Cybersecurity, assess the risk severity as one of Critical, High, Medium, Low,
+    or Information, and provide clear, actionable recommendations, remediations, or mitigations.

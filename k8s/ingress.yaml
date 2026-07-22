@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: register-summary
+  namespace: register-summary
+spec:
+  ingressClassName: public
+  rules:
+    - host: register-summary.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: register-summary
+                port:
+                  number: 80

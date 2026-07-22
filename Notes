@@ -1,0 +1,52 @@
+Create a .NET 10 & React based web application allows the user to upload one or more outlook .msg files.
+The application MUST be .NET 10 and use the latest version of React.
+
+The application should run stand-alone, in a docker container, or as a docker container in Kubernetes. 
+
+Include the ability to build docker containers, and configure the web-application to run in a Kubernetes environment (which will be microK8s initially). ie. Create a set of kubectl .yaml files.
+
+
+The .msg emails are from "The Register" and contain links technology related articles.
+
+Individual articles can be identified by their URLs which look like this:
+* https://go.reg.cx/tdml/4nNc?utm_source=daily&utm_medium=newsletter&utm_content=top-article
+* https://go.reg.cx/tdml/4nNB?utm_source=daily&utm_medium=newsletter&utm_content=article
+* https://go.reg.cx/tdml/4nN0?utm_source=daily&utm_medium=newsletter&utm_content=article
+(ie. relevant articles can be identified by "utm_content=top-article" or "utm_content=article")
+
+The application will read each of the .msg email files and extract all the article url links to construct a list. The list should contain only unique urls. Any duplicates should be discarded.
+
+The application will then iterate through the list of unique article urls:
+1) Open the article web-page referenced by each URL
+2) Send the contents of the articles web-page to an AI API and ask the AI to create a summary of the article consisting of 5 bullet points. The article should be Categorised (Cybersecurity, AI, Cloud or Other). Any articles categorised as "Cybersecurity" should be assessed for Risk (Critical, High, Medium, Low, Information). For Cybersecurity articles rated as Critical, High, Medium or Low, recommendations / remediations / mitigations should be included in the response.
+
+The application should support the following AI APIs: ChatGPT, Gemini or Claude. The AI API connection must be configurable.
+
+The API API prompt must be configurable.
+
+The application will collate a categorised (and for Cybersecurity articles, prioritised) list of article responses, then return a downloadble, formatted markdown file structured as follows:
+
+
+# Cybersecurity
+## <Severity>
+### <Title>
+    <Summary>
+    <Recommendations>
+### <Title>
+    <Summary>
+    <Recommendations>
+...
+### <Title>
+    <Summary>
+    <Recommendations>
+
+# AI | Cloud | Other
+### <Title>
+    <Summary>
+### <Title>
+    <Summary>
+...
+### <Title>
+    <Summary>
+
+    
