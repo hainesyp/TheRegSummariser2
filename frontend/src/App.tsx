@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { createJob, getJobStatus } from './api/client'
+import { createJob, getHealth, getJobStatus } from './api/client'
 import type { JobStatusResponse } from './api/types'
 import { FileUpload } from './components/FileUpload'
+import { JobDecision } from './components/JobDecision'
 import { JobProgress } from './components/JobProgress'
 import { ResultDownload } from './components/ResultDownload'
 import './App.css'
@@ -13,6 +14,13 @@ function App() {
   const [job, setJob] = useState<JobStatusResponse | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [version, setVersion] = useState<string | null>(null)
+
+  useEffect(() => {
+    getHealth()
+      .then((health) => setVersion(health.version))
+      .catch(() => setVersion(null))
+  }, [])
 
   useEffect(() => {
     if (!jobId || job?.status === 'Completed' || job?.status === 'Failed') {
@@ -68,7 +76,10 @@ function App() {
   return (
     <div className="app">
       <header>
-        <h1>The Register Summary</h1>
+        <h1>
+          The Register Summary
+          {version && <span className="app-version">v{version}</span>}
+        </h1>
         <p>Upload Register newsletter .msg files to get a categorised, AI-summarised HTML report.</p>
       </header>
 
@@ -78,6 +89,8 @@ function App() {
         {submitError && <p className="error-text">{submitError}</p>}
 
         {job && <JobProgress job={job} />}
+
+        {job?.status === 'AwaitingDecision' && <JobDecision jobId={jobId!} job={job} />}
 
         {job?.status === 'Completed' && <ResultDownload jobId={jobId!} onReset={handleReset} />}
 

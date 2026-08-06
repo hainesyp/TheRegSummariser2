@@ -23,6 +23,7 @@ public enum ArticleProcessingStatus
     Fetching,
     Summarizing,
     Completed,
+    Duplicate,
     Failed
 }
 
@@ -30,6 +31,7 @@ public enum JobStatus
 {
     Pending,
     Processing,
+    AwaitingDecision,
     Completed,
     Failed
 }

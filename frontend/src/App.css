@@ -14,6 +14,19 @@ header h1 {
   margin: 0 0 8px;
 }
 
+.app-version {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 10px;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
 header p {
   color: var(--text);
 }
@@ -168,6 +181,26 @@ main {
 .article-item--failed .article-item__status,
 .article-item__error {
   color: var(--danger);
+}
+
+.article-item--duplicate .article-item__status {
+  color: var(--text);
+  opacity: 0.7;
+}
+
+.job-decision {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.job-decision__actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .result-download {

@@ -9,6 +9,7 @@ public sealed record JobStatusResponse(
     string Status,
     int TotalCount,
     int CompletedCount,
+    int DuplicateCount,
     int FailedCount,
     string? ErrorMessage,
     IReadOnlyList<ArticleStatusDto> Articles);

@@ -1,6 +1,6 @@
-export type JobStatusValue = 'Pending' | 'Processing' | 'Completed' | 'Failed'
+export type JobStatusValue = 'Pending' | 'Processing' | 'AwaitingDecision' | 'Completed' | 'Failed'
 
-export type ArticleStatusValue = 'Pending' | 'Fetching' | 'Summarizing' | 'Completed' | 'Failed'
+export type ArticleStatusValue = 'Pending' | 'Fetching' | 'Summarizing' | 'Completed' | 'Duplicate' | 'Failed'
 
 export interface ArticleStatusDto {
   url: string
@@ -15,6 +15,7 @@ export interface JobStatusResponse {
   status: JobStatusValue
   totalCount: number
   completedCount: number
+  duplicateCount: number
   failedCount: number
   errorMessage: string | null
   articles: ArticleStatusDto[]

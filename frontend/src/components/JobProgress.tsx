@@ -9,11 +9,12 @@ const STATUS_LABELS: Record<string, string> = {
   Fetching: 'Fetching article…',
   Summarizing: 'Summarising…',
   Completed: 'Done',
+  Duplicate: 'Duplicate (skipped)',
   Failed: 'Failed',
 }
 
 export function JobProgress({ job }: JobProgressProps) {
-  const processedCount = job.completedCount + job.failedCount
+  const processedCount = job.completedCount + job.duplicateCount + job.failedCount
   const percent = job.totalCount === 0 ? 0 : Math.round((processedCount / job.totalCount) * 100)
 
   return (
@@ -23,6 +24,7 @@ export function JobProgress({ job }: JobProgressProps) {
       </div>
       <p className="progress-summary">
         {processedCount} / {job.totalCount} articles processed
+        {job.duplicateCount > 0 && ` (${job.duplicateCount} duplicate)`}
         {job.failedCount > 0 && ` (${job.failedCount} failed)`}
       </p>
 

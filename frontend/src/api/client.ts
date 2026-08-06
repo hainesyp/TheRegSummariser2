@@ -40,3 +40,29 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResponse> {
 export function getDownloadUrl(jobId: string): string {
   return `/api/jobs/${jobId}/download`
 }
+
+export async function getHealth(): Promise<{ status: string; version: string }> {
+  const response = await fetch('/api/health')
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response))
+  }
+
+  return (await response.json()) as { status: string; version: string }
+}
+
+export async function retryFailedArticles(jobId: string): Promise<void> {
+  const response = await fetch(`/api/jobs/${jobId}/retry`, { method: 'POST' })
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response))
+  }
+}
+
+export async function finishJob(jobId: string): Promise<void> {
+  const response = await fetch(`/api/jobs/${jobId}/finish`, { method: 'POST' })
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response))
+  }
+}

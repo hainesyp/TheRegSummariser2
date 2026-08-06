@@ -21,6 +21,12 @@ public static class JobEndpoints
 
         group.MapGet("/{id:guid}/download", DownloadJobResult)
             .WithName("DownloadJobResult");
+
+        group.MapPost("/{id:guid}/retry", RetryFailedArticles)
+            .WithName("RetryFailedArticles");
+
+        group.MapPost("/{id:guid}/finish", FinishJob)
+            .WithName("FinishJob");
     }
 
     private static async Task<IResult> CreateJobAsync(
@@ -104,11 +110,72 @@ public static class JobEndpoints
             job.Status.ToString(),
             job.Articles.Count,
             job.Articles.Count(a => a.Status == ArticleProcessingStatus.Completed),
+            job.Articles.Count(a => a.Status == ArticleProcessingStatus.Duplicate),
             job.Articles.Count(a => a.Status == ArticleProcessingStatus.Failed),
             job.ErrorMessage,
             articles);
 
         return Results.Ok(response);
+    }
+
+    private static async Task<IResult> RetryFailedArticles(
+        Guid id, IJobStore jobStore, IJobQueue jobQueue, CancellationToken cancellationToken)
+    {
+        var job = jobStore.GetJob(id);
+        if (job is null)
+        {
+            return Results.NotFound(new ErrorResponse($"Job '{id}' was not found."));
+        }
+
+        if (job.Status != JobStatus.AwaitingDecision)
+        {
+            return Results.Conflict(new ErrorResponse($"Job '{id}' is not awaiting a retry decision (status: {job.Status})."));
+        }
+
+        foreach (var article in job.Articles.Where(a => a.Status == ArticleProcessingStatus.Failed))
+        {
+            article.Status = ArticleProcessingStatus.Pending;
+            article.Error = null;
+        }
+
+        job.Status = JobStatus.Processing;
+        job.ErrorMessage = null;
+        jobStore.UpdateJob(job);
+
+        await jobQueue.EnqueueAsync(job.Id, cancellationToken);
+
+        return Results.Accepted($"/api/jobs/{job.Id}");
+    }
+
+    private static IResult FinishJob(Guid id, IJobStore jobStore, IHtmlReportBuilder htmlReportBuilder)
+    {
+        var job = jobStore.GetJob(id);
+        if (job is null)
+        {
+            return Results.NotFound(new ErrorResponse($"Job '{id}' was not found."));
+        }
+
+        if (job.Status != JobStatus.AwaitingDecision)
+        {
+            return Results.Conflict(new ErrorResponse($"Job '{id}' is not awaiting a retry decision (status: {job.Status})."));
+        }
+
+        var succeeded = job.Articles.Where(a => a.Status == ArticleProcessingStatus.Completed).ToList();
+        if (succeeded.Count == 0)
+        {
+            return Results.BadRequest(new ErrorResponse("No articles have been summarised yet; nothing to generate a report from."));
+        }
+
+        var failedCount = job.Articles.Count(a => a.Status == ArticleProcessingStatus.Failed);
+
+        job.ReportHtml = htmlReportBuilder.Build(succeeded);
+        job.Status = JobStatus.Completed;
+        job.ErrorMessage = failedCount > 0
+            ? $"Report generated with {succeeded.Count} of {job.Articles.Count} articles; {failedCount} failed and were excluded."
+            : null;
+        jobStore.UpdateJob(job);
+
+        return Results.Ok();
     }
 
     private static IResult DownloadJobResult(Guid id, IJobStore jobStore)

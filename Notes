@@ -49,4 +49,14 @@ The application will collate a categorised (and for Cybersecurity articles, prio
 ### <Title>
     <Summary>
 
-    
+
+# Version 1.1
+
+1. Cut a new feature branch.
+
+2. Set the application version number to 1.1, and display this on the screen.
+
+3. The application is not deduping, the articles. Before processing AI summaries, articles should be deduped (based on title and url) such that no duplicates are processed by AI and output. Only unique articles should be summarised by AI and output to the HTML output file. 
+
+4. A backoff and retry feature is required. A recent attempt to summarise 96 articles across 5 emails failed with a 503 error response from the LLM on the last article rendering 95 summaries useless. I need the option to either retry failed article summary attempts, or to terminate the summary process and generate the report based on the articles successfully summarised so far.
+

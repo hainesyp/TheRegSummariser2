@@ -4,6 +4,7 @@ using RegisterSummary.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 const string DevCorsPolicy = "DevCors";
+const string AppVersion = "1.1";
 
 builder.Services.AddRegisterSummaryInfrastructure(builder.Configuration);
 
@@ -27,7 +28,7 @@ if (app.Environment.IsDevelopment())
     app.UseCors(DevCorsPolicy);
 }
 
-app.MapGet("/api/health", () => Results.Ok(new { status = "healthy" }));
+app.MapGet("/api/health", () => Results.Ok(new { status = "healthy", version = AppVersion }));
 
 app.MapJobEndpoints();
 

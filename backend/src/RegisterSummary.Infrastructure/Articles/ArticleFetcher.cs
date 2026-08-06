@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using RegisterSummary.Core.Interfaces;
+using RegisterSummary.Core.Models;
 
 namespace RegisterSummary.Infrastructure.Articles;
 
@@ -13,7 +14,7 @@ public sealed partial class ArticleFetcher(HttpClient httpClient) : IArticleFetc
         "//script", "//style", "//nav", "//header", "//footer", "//aside", "//noscript", "//form", "//iframe"
     ];
 
-    public async Task<string> FetchArticleTextAsync(string url, CancellationToken cancellationToken)
+    public async Task<ArticleContent> FetchArticleContentAsync(string url, CancellationToken cancellationToken)
     {
         using var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         response.EnsureSuccessStatusCode();
@@ -22,6 +23,11 @@ public sealed partial class ArticleFetcher(HttpClient httpClient) : IArticleFetc
 
         var doc = new HtmlDocument();
         doc.LoadHtml(html);
+
+        // The <title> tag identifies the actual article for dedup purposes (the newsletter's
+        // go.reg.cx tracking link is unique per send, even when it points at the same article).
+        var title = doc.DocumentNode.SelectSingleNode("//title")?.InnerText;
+        title = string.IsNullOrWhiteSpace(title) ? null : System.Net.WebUtility.HtmlDecode(title).Trim();
 
         foreach (var selector in NoiseNodeSelectors)
         {
@@ -46,7 +52,14 @@ public sealed partial class ArticleFetcher(HttpClient httpClient) : IArticleFetc
             text = text[..MaxArticleTextLength];
         }
 
-        return text;
+        var resolvedUrl = response.RequestMessage?.RequestUri?.ToString() ?? url;
+
+        return new ArticleContent
+        {
+            ResolvedUrl = resolvedUrl,
+            Title = title,
+            Text = text
+        };
     }
 
     [GeneratedRegex(@"\s+")]
