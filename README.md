@@ -49,7 +49,15 @@ variables using the ASP.NET Core `Section__Key` convention, e.g. `Ai__Provider=G
 
 ## Running standalone (no Docker)
 
-Requires .NET 10 SDK and Node 20.19+/22+.
+Requires .NET 10 SDK and Node 20.19+/22
+
+'''bash
+# Install dotnet 10.0
+sudo apt install dotnet-sdk-10.0
+
+# Install npm
+sudo apt install nodejs
+'''
 
 ```bash
 # Terminal 1 - backend
